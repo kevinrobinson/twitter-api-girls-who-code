@@ -1,6 +1,5 @@
 # GWC API Workshop
 ## Boston :: 2014-08-12
----
 
 ## Agenda
 * 1:00 - 1:05 : Introduction
