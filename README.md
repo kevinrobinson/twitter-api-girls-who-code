@@ -53,6 +53,7 @@
 * OAuth Introduction: <http://hueniverse.com/oauth/guide/intro/>
 * Application Auth: <https://dev.twitter.com/docs/auth/application-only-auth>
 * OAuth.io : <https://oauth.io/>
+* Initializr : <http://www.initializr.com/>
 
 ## Get in touch
 * Kevin : [@krob](http://twitter.com/krob)
