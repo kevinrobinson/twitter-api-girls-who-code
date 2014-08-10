@@ -41,6 +41,7 @@
 		* Code: <https://github.com/twitterdev/node-timeline-visualizations/blob/master/timeline.js>
 	* Geolocation: <https://github.com/romainhuet/twitter-platform-demos/blob/master/streaming/geolocation.html>
 	* Streaming Tweets Filter: <https://github.com/romainhuet/twitter-platform-demos/blob/master/streaming/custom.html>
+	* Rendering Tweets with AngularJS and Node.js: <https://github.com/twitterdev/sample-angular-node>
 	* favbot: <https://github.com/jlamere/favbot>
 * External Examples: 
 	* <http://mentionmapp.com/>
@@ -52,10 +53,10 @@
 * DevTools Course: <https://www.codeschool.com/courses/discover-devtools>
 * OAuth Introduction: <http://hueniverse.com/oauth/guide/intro/>
 * Application Auth: <https://dev.twitter.com/docs/auth/application-only-auth>
-* OAuth.io : <https://oauth.io/>
-* Initializr : <http://www.initializr.com/>
+* OAuth.io: <https://oauth.io/>
+* Initializr: <http://www.initializr.com/>
 
 ## Get in touch
-* Kevin : [@krob](http://twitter.com/krob)
-* Drew : [@mediocrity](http://twitter.com/mediocrity)
+* Kevin: [@krob](http://twitter.com/krob)
+* Drew: [@mediocrity](http://twitter.com/mediocrity)
 
