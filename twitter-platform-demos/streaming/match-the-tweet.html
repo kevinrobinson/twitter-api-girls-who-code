@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Twitter Streaming APIs Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Romain Huet">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/twitter-demos.css" type="text/css">
+    <link rel="shortcut icon" href="//abs.twimg.com/favicons/favicon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Twitter</a>
+          <h1 class="navbar-text">Twitter Streaming APIs Demo</h1>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="https://twitter.com/romainhuet" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @romainhuet</a>
+          </li>
+          <li>
+            <a href="https://twitter.com/TwitterDev" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @TwitterDev</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container content">
+      <div class="page-header">
+        <h2>Receiving Tweets from <code>GET statuses/sample</code></h2>
+      </div>
+      <h3>Match the tweet!</h3>
+      <div id="tweet-text" style="padding: 10px; border: 1px solid #ccc; width: 600px; margin-bottom: 50px;">Connecting...</div>
+      <div id="picture-container" />
+      <h3><span id="score">0</span> points</h3>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Connect to the streaming API, and call `onTweetCallback`
+      // whenever a tweet comes in.
+      function connectToStream(options) {
+        var socket = io.connect('http://localhost');
+
+        // Subscribe to `connect` events on the socket.
+        // And send a `stream` event to start streaming.
+        socket.on('connect', function() {
+          console.log('Socket connection established.');
+          socket.emit('stream', { endpoint: 'statuses/sample' });
+        });
+
+        // Subscribe to `disconnect` events on the socket.
+        socket.on('disconnect', function() {
+          console.log('Socket connection interrupted.');
+        });
+
+        // Subscribe to Tweet events on the socket,
+        // and call `onTweetCallback`
+        var tweetsReceived = 0;
+        socket.on('tweet', function(tweet) {
+          tweetsReceived++;
+          options.onTweetCallback(tweet);
+        });
+      };
+
+      function main() {
+        var tweetsPerRound = 4;
+
+        // Keep the tweet queue full
+        var tweets = [];
+        connectToStream({
+          onTweetCallback: function(tweet) {
+            tweets.push(tweet);
+            if (tweets.length === tweetsPerRound) {
+              startRound(tweets, 0, tweetsPerRound);
+            }
+          }
+        });
+      };
+
+      function renderUserImage(tweet) {
+        return $('<img data-tweet-id="' + tweet.id + '">')
+            .css({
+              padding: '5px',
+              cursor: 'default'
+            })
+            .attr({
+              src: tweet.user.profile_image_url,
+              height: 128,
+              width: 128
+            }).get(0).outerHTML;
+      };
+
+      function renderPictureOptionsHtml(pictureTweets) {
+        return pictureTweets.map(function(tweet) {
+          var imageHtml = renderUserImage(tweet);
+          var handleHtml = $('<div>')
+            .text('@' + tweet.user.screen_name)
+            .get(0).outerHTML;
+          var bothHtml = $('<div>')
+            .css({ display: 'inline-block' })
+            .html(imageHtml + handleHtml).get(0).outerHTML;
+          return bothHtml;
+        }).join('');
+      };
+
+      function renderFeedback(correctTweetId, isCorrect) {
+        $('img[data-tweet-id="' + correctTweetId + '"]').css({ 
+          border: '2px solid green'
+        });
+      };
+
+      function startRound(allTweets, currentIndex, tweetsPerRound) {
+        var tweets = allTweets.slice(currentIndex, currentIndex + tweetsPerRound);
+        var delayBetweenRounds = 1000;
+
+        var correctTweet = tweets[0];
+        var randomizedTweets = tweets.sort(function(a, b) {
+          return Math.random() - 0.5;
+        });
+        $('#tweet-text').data('tweet-id', correctTweet.id).text(correctTweet.text);
+        $('#picture-container').html(renderPictureOptionsHtml(randomizedTweets));
+
+        // Listen for the user's choice
+        $('#picture-container').on('click', 'img', function(e) {
+          var isCorrect = $(e.target).data('tweet-id') === correctTweet.id;
+          renderFeedback(correctTweet.id, isCorrect);
+          setTimeout(function() {
+            startRound(allTweets, currentIndex + tweetsPerRound, tweetsPerRound);
+          }, delayBetweenRounds);
+        })
+      };
+
+      main();
+    </script>    
+    <script async src="//platform.twitter.com/widgets.js"></script>
+  </body>
+</html>

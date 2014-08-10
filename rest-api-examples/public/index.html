@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Twitter REST APIs Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Romain Huet">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/twitter-demos.css" type="text/css">
+    <link rel="shortcut icon" href="//abs.twimg.com/favicons/favicon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Twitter</a>
+          <h1 class="navbar-text">Twitter REST APIs Demo</h1>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="https://twitter.com/romainhuet" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @romainhuet</a>
+          </li>
+          <li>
+            <a href="https://twitter.com/TwitterDev" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @TwitterDev</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container content">
+      <div class="page-header">
+        <h2>Friends list</h2>
+        <pre class="friends-list">Loading...</pre>
+      </div>
+    </div>
+
+
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script>
+      // Wraps up querying the server-side proxy, which
+      // is for working around CORS restrictions in the browser.
+      function twitterApi(method, endpoint, params) {
+        return $.ajax({
+          url: '/proxy',
+          data: { 
+            method: method,
+            endpoint: endpoint,
+            params: params
+          }
+        })
+      };
+
+      function friendIds(username, limit) {
+        return twitterApi('get', 'friends/ids', {
+          screen_name: 'krob',
+          count: limit
+        });
+      }
+
+      function usersLookup(userIds) {
+        return twitterApi('get', 'users/lookup', {
+          user_id: userIds.join()
+        });
+      }
+
+      function renderFriendStatus(users) {
+        return users.map(function(user) {
+          return '<div>' + _.escape(user.status ? user.status.text : '') + '</div>';
+        });
+      }
+
+      function renderFriendStatusWords(users) {
+        var words = _.uniq(_.flatten(users.map(function(user) {
+          return (user.status ? user.status.text : '').split(' ');
+        }), true)).sort();
+        return words.map(function(word) {
+          return '<span style="padding: 10px;">' + _.escape(word) + '</span>';
+        });
+      }
+
+      function renderFavoriteEveryone(users) {
+        var userTweetIds = latestTweetIds(users);
+        var html = userTweetIds.map(function(tweetId) {
+          return '<p><a href="https://twitter.com/intent/favorite?tweet_id=' + tweetId + '">Favorite</a></p>';
+        });
+        return html;
+      }
+
+      function latestTweetIds(users) {
+        return _.compact(_.uniq(users.map(function(user) {
+          return user.status ? user.status.id : null;
+        }), true));
+      }
+
+      function getUsersLastTweetsHtml(users) {
+        return users.map(function(user) {
+          return user.status ? embeddedTweetHtml(user, user.status) : '';
+        }).join('');
+      }
+
+      // This works in conjunction with `loadWidgets` - use this to generate
+      // HTML and then turn them into full widgets.
+      function embeddedTweetHtml(user, tweet) {
+        return '<blockquote class="twitter-tweet" align="center"><p>' + tweet.text + '</p><small>@' + user.screen_name + ' <a href="https://twitter.com/' + user.screen_name + '/status/' + tweet.id_str + '">' + tweet.created_at + '</a></small></blockquote>';
+      }
+
+      function renderHtml(html) {
+        $('.friends-list').html(html);
+      }
+
+      function loadWidgets() {
+        twttr.widgets.load();
+      }
+
+      function main() {
+        var username = 'krob';
+        var limit = 5;
+        friendIds(username, limit)
+          .then(function(response) { return response.ids; })
+          .then(usersLookup)
+          // show my friends' status...
+          .then(renderFriendStatus)
+          .then(renderHtml)
+          // or make it fully interactive tweets...
+          // .then(getUsersLastTweetsHtml)
+          // .then(renderHtml)
+          // .then(loadWidgets);
+          // or show the words my friends are using...
+          // .then(renderFriendStatusWords)
+          // .then(renderHtml)
+          // or show me links to favorite everyone
+          // .then(renderFavoriteEveryone)
+          // .then(renderHtml)
+      };
+
+      $(document).ready(main);
+    </script>
+    <script async src="//platform.twitter.com/widgets.js"></script>
+  </body>
+</html>

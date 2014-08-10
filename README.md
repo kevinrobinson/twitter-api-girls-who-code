@@ -1,6 +1,13 @@
 # GWC API Workshop
 ## Boston :: 2014-08-12
 
+## Repository contents
+* `bookwormasaurus` - example project using NYTimes and Twitter APIs, built with Cordova
+* `node-timeline-visualizations` - uses the Twitter REST API to show when your friends joined Twitter
+* `rest-api-examples` - simple examples of using the Twitter REST API
+* `sample-angular-node` - search tweets and view with a cool layout using Angular.jS
+* `twitter-platform-demos/streaming` - examples of the Twitter streaming API
+
 ## Agenda
 * 1:00 - 1:05 : Introduction
 * 1:05 - 1:15 : Introduction to the Twitter (and other) APIs
