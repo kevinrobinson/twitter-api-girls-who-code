@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Twitter Streaming APIs Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Romain Huet">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/twitter-demos.css" type="text/css">
+    <link rel="shortcut icon" href="//abs.twimg.com/favicons/favicon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Twitter</a>
+          <h1 class="navbar-text">Twitter Streaming APIs Demo</h1>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="https://twitter.com/romainhuet" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @romainhuet</a>
+          </li>
+          <li>
+            <a href="https://twitter.com/TwitterDev" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @TwitterDev</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container content">
+      <div class="page-header">
+        <h2>Receiving Tweets from <code>GET statuses/sample</code></h2>
+      </div>
+      <h3>It's a race between:</h3>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="champion">Champion</label>
+            <input type="email" class="form-control" id="champion" placeholder="Enter keyword or hashtag">
+          </div>
+          <pre class="hidden" id="champion-results">Connecting...</pre>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="challenger">Challenger</label>
+            <input type="email" class="form-control" id="challenger" placeholder="Enter keyword or hashtag">
+          </div>
+          <pre class="hidden" id="challenger-results">Connecting...</pre>
+        </div>
+      </div>
+      <button type="button" class="go btn btn-default btn-success">Go!</button>
+      <h3><span id="tweet-count">0</span> tweets seen</h3>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Connect to the streaming API, and call `onTweetCallback`
+      // whenever a tweet comes in.  Optionally sample the tweets further
+      // by passing `samplingRate` (e.g., 1 in 1000).
+      function connectToStream(options) {
+        var socket = io.connect('http://localhost');
+
+        // Subscribe to `connect` events on the socket.
+        // And send a `stream` event to start streaming.
+        socket.on('connect', function() {
+          console.log('Socket connection established.');
+          socket.emit('stream', { endpoint: 'statuses/sample' });
+        });
+
+        // Subscribe to `disconnect` events on the socket.
+        socket.on('disconnect', function() {
+          console.log('Socket connection interrupted.');
+        });
+
+        // Subscribe to Tweet events on the socket,
+        // and call `onTweetCallback`
+        var tweetsReceived = 0;
+        socket.on('tweet', function(tweet) {
+          tweetsReceived++;
+          if (options.samplingRate && (tweetsReceived % options.samplingRate !== 0)) {
+            return;
+          }
+          options.onTweetCallback(tweet);
+        });
+      };
+
+      function main() {
+        $('button.go').on('click', function(e) {
+          var champion = $('#champion').val();
+          var challenger = $('#challenger').val();
+          $('button.go').removeClass('btn-success');
+          startRace(champion, challenger);
+        });
+      }
+  
+      function tweetHasText(tweet, text) {
+        return tweet.text.toLowerCase().indexOf(text.toLowerCase()) !== -1;
+      }
+
+      function startRace(champion, challenger) {
+        var challengerTweets = [];
+        var championTweets = [];
+        var tweetCount = 0;
+
+        $('#challenger-results').removeClass('hidden');
+        $('#champion-results').removeClass('hidden');
+        connectToStream({
+          onTweetCallback: function(tweet) {
+            tweetCount++;
+            if (tweetHasText(tweet, champion)) {
+              championTweets.push(tweet);
+            }
+            if (tweetHasText(tweet, challenger)) {
+              challengerTweets.push(tweet);
+            }
+
+            renderRaceResults(tweetCount, challengerTweets, championTweets);
+          }
+        });
+      };
+
+      function renderTweetsHtml(tweets) {
+        var tweetsHtml = tweets.map(function(tweet) {
+          return '<div>' + _.escape(tweet.text) + '</div>';
+        });
+        return tweetsHtml + '<br /><b>' + tweets.length + ' tweets</b>';
+      };
+      function renderRaceResults(tweetCount, challengerTweets, championTweets) {
+        $('#tweet-count').text(tweetCount);
+        $('#challenger-results').html(renderTweetsHtml(challengerTweets));
+        $('#champion-results').html(renderTweetsHtml(championTweets));
+      };
+
+      main();
+    </script>    
+    <script async src="//platform.twitter.com/widgets.js"></script>
+  </body>
+</html>

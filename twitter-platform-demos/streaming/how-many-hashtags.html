@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Twitter Streaming APIs Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Romain Huet">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/twitter-demos.css" type="text/css">
+    <link rel="shortcut icon" href="//abs.twimg.com/favicons/favicon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Twitter</a>
+          <h1 class="navbar-text">Twitter Streaming APIs Demo</h1>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="https://twitter.com/romainhuet" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @romainhuet</a>
+          </li>
+          <li>
+            <a href="https://twitter.com/TwitterDev" class="twitter-follow-button" data-size="large" data-show-count="false">Follow @TwitterDev</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container content">
+      <div class="page-header">
+        <h2>Receiving Tweets from <code>GET statuses/sample</code></h2>
+      </div>
+      <h3>How many hashtags are people using?</h3>
+      <pre id="hashtags">Connecting...</pre>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Connect to the streaming API, and call `onTweetCallback`
+      // whenever a tweet comes in.  Optionally sample the tweets further
+      // by passing `samplingRate` (e.g., 1 in 1000).
+      function connectToStream(options) {
+        var socket = io.connect('http://localhost');
+
+        // Subscribe to `connect` events on the socket.
+        // And send a `stream` event to start streaming.
+        socket.on('connect', function() {
+          console.log('Socket connection established.');
+          socket.emit('stream', { endpoint: 'statuses/sample' });
+        });
+
+        // Subscribe to `disconnect` events on the socket.
+        socket.on('disconnect', function() {
+          console.log('Socket connection interrupted.');
+        });
+
+        // Subscribe to Tweet events on the socket,
+        // and call `onTweetCallback`
+        var tweetsReceived = 0;
+        socket.on('tweet', function(tweet) {
+          tweetsReceived++;
+          if (options.samplingRate && (tweetsReceived % options.samplingRate !== 0)) {
+            return;
+          }
+          options.onTweetCallback(tweet);
+        });
+      };
+  
+      function renderHashtagCountMap(hashtagCountMap) {
+        document.getElementById('hashtags').innerText = JSON.stringify(hashtagCountMap, null, 2);
+      }
+
+      function main() {
+        var hashtagCountMap = {};
+
+        connectToStream({
+          onTweetCallback: function(tweet) {
+            var hashtagCount = tweet.entities.hashtags.length;
+            hashtagCountMap[hashtagCount] = (hashtagCountMap[hashtagCount] || 0) + 1
+            renderHashtagCountMap(hashtagCountMap);
+          }
+        });
+      }
+
+      main();
+    </script>    
+    <script async src="//platform.twitter.com/widgets.js"></script>
+  </body>
+</html>
