@@ -1,0 +1,59 @@
+2014-08-12 02:32:44.566 bookwormawaurus[54837:90b] Multi-tasking -> Device: YES, App: YES
+2014-08-12 02:32:44.605 bookwormawaurus[54837:90b] Unlimited access to network resources
+2014-08-12 02:32:44.618 bookwormawaurus[54837:90b] 
+
+Started backup to iCloud! Please be careful.
+Your application might rejected by Apple if you store too much data.
+For more information please read "iOS Data Storage Guidelines"
+You could find it at the following address https://developer.apple.com/icloud/documentation/data-storage/ .
+
+2014-08-12 02:32:44.992 bookwormawaurus[54837:90b] Resetting plugins due to page load.
+2014-08-12 02:32:45.223 bookwormawaurus[54837:90b] Finished load of: file:///Users/krobinson/Library/Application%20Support/iPhone%20Simulator/7.1/Applications/2D71C18E-BCC4-4174-8E1F-279016517A54/bookwormawaurus.app/www/index.html
+2014-08-12 02:32:45.265 bookwormawaurus[54837:90b] CDVPlugin class SQLitePlugin (pluginName: SQLitePlugin) does not exist.
+2014-08-12 02:32:45.265 bookwormawaurus[54837:90b] ERROR: Plugin 'SQLitePlugin' not found, or is not a CDVPlugin. Check your plugin mapping in config.xml.
+2014-08-12 02:32:45.266 bookwormawaurus[54837:90b] -[CDVCommandQueue executePending] [Line 158] FAILED pluginJSON = [
+  "SQLitePlugin503803652",
+  "SQLitePlugin",
+  "open",
+  [
+    {
+      "name" : "user.db"
+    }
+  ]
+]
+2014-08-12 02:32:45.268 bookwormawaurus[54837:90b] CDVPlugin class SQLitePlugin (pluginName: SQLitePlugin) does not exist.
+2014-08-12 02:32:45.269 bookwormawaurus[54837:90b] ERROR: Plugin 'SQLitePlugin' not found, or is not a CDVPlugin. Check your plugin mapping in config.xml.
+2014-08-12 02:32:45.269 bookwormawaurus[54837:90b] -[CDVCommandQueue executePending] [Line 158] FAILED pluginJSON = [
+  "SQLitePlugin503803653",
+  "SQLitePlugin",
+  "backgroundExecuteSqlBatch",
+  [
+    {
+      "dbargs" : {
+        "dbname" : "user.db"
+      },
+      "executes" : [
+        {
+          "sql" : "BEGIN",
+          "params" : [
+
+          ],
+          "query" : [
+            "BEGIN"
+          ],
+          "qid" : 0
+        },
+        {
+          "sql" : "CREATE TABLE IF NOT EXISTS user (oauth_token, oauth_token_secret)",
+          "params" : [
+
+          ],
+          "query" : [
+            "CREATE TABLE IF NOT EXISTS user (oauth_token, oauth_token_secret)"
+          ],
+          "qid" : 1
+        }
+      ]
+    }
+  ]
+]
